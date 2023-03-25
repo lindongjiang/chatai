@@ -16,7 +16,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false // 禁用 helmet 的 Content-Security-Policy 功能
+}));
+
 app.use(cookieParser());
 app.use(csrf());
 
