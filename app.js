@@ -22,7 +22,7 @@ app.use(cors());
 // });
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(csrf());
+app.use(csrf({ cookie: true }));
 
 // 接收第三方客户端发送的消息
 app.post('/message', (req, res) => {
