@@ -4,6 +4,7 @@ const axios = require('axios');
 const csrf = require('csurf');
 const helmet = require('helmet');
 const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
 
 // 从 .env 文件中读取 API 秘钥
 dotenv.config();
@@ -13,16 +14,11 @@ const app = express();
 
 // 添加中间件
 app.use(express.json());
-// Add CORS headers
 app.use(cors());
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(csrf({ cookie: true }));
+app.use(cookieParser());
+app.use(csrf());
 
 // 接收第三方客户端发送的消息
 app.post('/message', (req, res) => {
