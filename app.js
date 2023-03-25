@@ -17,16 +17,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet({
   contentSecurityPolicy: false
 }));
-
 app.use(cookieParser());
+
+// 将 csrf 中间件添加到所有路由的顶部，以确保对所有 POST，PUT 和 DELETE 请求进行 CSRF 验证
+// 但是，要注意，由于 GET 请求不会更改应用程序状态，因此不需要进行 CSRF 验证
+app.use(csrf());
+
+// 在所有路由中向模板添加 CSRF 令牌
+// 除了 GET 请求之外的所有请求都需要通过模板传递令牌
 app.use((req, res, next) => {
-  const csrfProtection = csrf({ cookie: true });
-  csrfProtection(req, res, err => {
-    if (err) {
-      return res.status(500).send('CSRF token generation failed');
-    }
-    next();
-  });
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 app.post('/message', (req, res) => {
@@ -38,7 +39,6 @@ app.post('/message', (req, res) => {
   })
   .then(response => {
     const processedMessage = response.data.processedMessage;
-
     res.send(processedMessage);
   })
   .catch(error => {
