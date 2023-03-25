@@ -6,28 +6,32 @@ const helmet = require('helmet');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 
-// 从 .env 文件中读取 API 秘钥
 dotenv.config();
 const API_KEY = process.env.API_KEY;
 
 const app = express();
 
-// 添加中间件
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet({
-  contentSecurityPolicy: false // 禁用 helmet 的 Content-Security-Policy 功能
+  contentSecurityPolicy: false
 }));
 
 app.use(cookieParser());
-app.use(csrf());
+app.use((req, res, next) => {
+  const csrfProtection = csrf({ cookie: true });
+  csrfProtection(req, res, err => {
+    if (err) {
+      return res.status(500).send('CSRF token generation failed');
+    }
+    next();
+  });
+});
 
-// 接收第三方客户端发送的消息
 app.post('/message', (req, res) => {
   const message = req.body.message;
 
-  // 调用 chatgpt 的 API 处理消息，携带 API 秘钥
   axios.post('http://chatgpt-api.com/process', {
     message: message,
     api_key: API_KEY
@@ -35,7 +39,6 @@ app.post('/message', (req, res) => {
   .then(response => {
     const processedMessage = response.data.processedMessage;
 
-    // 将处理后的消息返回给第三方客户端
     res.send(processedMessage);
   })
   .catch(error => {
@@ -44,4 +47,4 @@ app.post('/message', (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log('中转站已启动，监听端口 3000'));
+app.listen(3000, () => console.log('Server is running on port 3000'));
