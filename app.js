@@ -35,7 +35,7 @@ app.post('/message', (req, res) => {
   const message = req.body.message;
 
   // 调用 chatgpt 的 API 处理消息，携带 API 秘钥
-  axios.post('http://chatgpt-api.com/process', {
+  axios.post('https://api.openai.com/v1/chat/completions ', {
     message: message,
     api_key: API_KEY
   })
