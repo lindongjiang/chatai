@@ -1,44 +1,48 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const csrf = require('csurf');
 const helmet = require('helmet');
-const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const dotenv = require('dotenv');
 
 dotenv.config();
-const API_KEY = process.env.API_KEY;
 
 const app = express();
+const API_KEY = process.env.API_KEY || '<your_api_key>';
 
 app.use(express.json());
-app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet({
-  contentSecurityPolicy: false
-}));
+app.use(cors());
+app.use(helmet());
+
+// 使用 cookie-parser 中间件，解析并处理 Cookie
 app.use(cookieParser());
 
-// 将 csrf 中间件添加到所有路由的顶部，以确保对所有 POST，PUT 和 DELETE 请求进行 CSRF 验证
-// 但是，要注意，由于 GET 请求不会更改应用程序状态，因此不需要进行 CSRF 验证
-app.use(csrf());
+// 声明一个中间件，用于检查 API 秘钥是否存在
+function checkApiKey(req, res, next) {
+  if (!API_KEY) {
+    res.status(500).send('API Key is not set');
+  } else {
+    next();
+  }
+}
 
-// 在所有路由中向模板添加 CSRF 令牌
-// 除了 GET 请求之外的所有请求都需要通过模板传递令牌
-app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
-  next();
-});
+// 中间件，检查是否存在 API 秘钥
+app.use(checkApiKey);
 
+// 接收第三方客户端发送的消息
 app.post('/message', (req, res) => {
   const message = req.body.message;
 
+  // 调用 chatgpt 的 API 处理消息，携带 API 秘钥
   axios.post('http://chatgpt-api.com/process', {
     message: message,
     api_key: API_KEY
   })
   .then(response => {
     const processedMessage = response.data.processedMessage;
+
+    // 将处理后的消息返回给第三方客户端
     res.send(processedMessage);
   })
   .catch(error => {
@@ -47,4 +51,4 @@ app.post('/message', (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log('Server is running on port 3000'));
+app.listen(3000, () => console.log('中转站已启动，监听端口 3000'));
