@@ -5,7 +5,7 @@ const openai = require('openai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
-const util = require('util');
+// const util = require('util');
 
 dotenv.config();
 
@@ -16,8 +16,18 @@ const API_KEY = process.env.API_KEY || 'sk-H9o1XeXYb0sZhJKdNeIWT3BlbkFJM9ymfvGS5
 // 设置 OpenAI API Key
 openai.apiKey = API_KEY;
 
-// 将 openai.completions.create 转换成 Promise 形式
-const createCompletion = util.promisify(openai.Completions.create);
+// 将 openai.Completions.create 转换成 Promise 形式
+const createCompletion = (params) => {
+  return new Promise((resolve, reject) => {
+    openai.Completions.create(params, (error, response) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(response);
+      }
+    });
+  });
+};
 
 // 中间件
 app.use(express.json());
