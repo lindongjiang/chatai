@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.API_KEY || '<your_api_key>';
+const API_KEY = process.env.API_KEY || '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';
 
 // 设置 OpenAI API Key
 openai.apiKey = API_KEY;
