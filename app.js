@@ -5,6 +5,7 @@ const openai = require('openai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const util = require('util');
 
 dotenv.config();
 
@@ -14,6 +15,9 @@ const API_KEY = process.env.API_KEY || '<your_api_key>';
 
 // 设置 OpenAI API Key
 openai.apiKey = API_KEY;
+
+// 将 openai.completions.create 转换成 Promise 形式
+const createCompletion = util.promisify(openai.completions.create);
 
 // 中间件
 app.use(express.json());
@@ -34,7 +38,7 @@ app.post('/message', async (req, res) => {
 
   try {
     // 调用 OpenAI API 处理消息
-    const response = await openai.completions.create({
+    const response = await createCompletion({
       engine: 'davinci',
       prompt: message,
       temperature: 0.5,
@@ -49,7 +53,10 @@ app.post('/message', async (req, res) => {
     res.send(processedMessage);
   } catch (error) {
     console.error(error);
-    res.status(500).send('服务器错误');
+    res.status(500).json({
+      code: 'SERVER_ERROR',
+      message: '服务器错误'
+    });
   }
 });
 
