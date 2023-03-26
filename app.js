@@ -17,7 +17,7 @@ const API_KEY = process.env.API_KEY || 'sk-H9o1XeXYb0sZhJKdNeIWT3BlbkFJM9ymfvGS5
 openai.apiKey = API_KEY;
 
 // 将 openai.completions.create 转换成 Promise 形式
-const createCompletion = util.promisify(openai.completions.create);
+const createCompletion = util.promisify(openai.Completions.create);
 
 // 中间件
 app.use(express.json());
